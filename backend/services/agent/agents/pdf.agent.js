@@ -54,6 +54,7 @@ ${state.prompt}
 
         return {
           ...state,
+          artifacts: [{ type: "pdf", url: downloadUrl, title: data.title }],
           aiResponse:`# PDF Generated
 
 **${data.title}**

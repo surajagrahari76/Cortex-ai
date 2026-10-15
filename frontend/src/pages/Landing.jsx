@@ -82,7 +82,7 @@ function Landing() {
         </motion.div>
 
         <h1 className='text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent'>
-          Welcome to CortexAI
+          Welcome to Cortex AI
         </h1>
         <p className='text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed'>
           Your intelligent coding assistant. Write, debug, and understand code faster than ever before with an AI that understands your context.

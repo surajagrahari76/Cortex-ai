@@ -58,6 +58,7 @@ const downloadUrl=await getFromS3(filename,24*60*60)
 
 return {
     ...state,
+    artifacts: [{ type: "ppt", url: downloadUrl, title: data.title }],
     aiResponse:`# ✅ Presentation Generated
 
 **${data.title}**

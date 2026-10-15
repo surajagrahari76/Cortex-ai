@@ -42,7 +42,7 @@ function MessageList() {
      dispatch(setIsLoading(false));
      if (data) {
        dispatch(setArtifacts(data.artifacts || []));
-       dispatch(updateLastMessage({ images: data.images }));
+       dispatch(updateLastMessage({ images: data.images, artifacts: data.artifacts }));
      }
    }
 
@@ -66,7 +66,7 @@ function MessageList() {
      dispatch(setIsLoading(false));
      if (data) {
        dispatch(setArtifacts(data.artifacts || []));
-       dispatch(updateLastMessage({ images: data.images }));
+       dispatch(updateLastMessage({ images: data.images, artifacts: data.artifacts }));
      }
    }
 
@@ -84,7 +84,7 @@ function MessageList() {
                <div className='w-16 h-16 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-[0_0_30px_rgba(99,102,241,0.3)]'>
                  <span className='text-2xl font-bold text-white'>C</span>
                </div>
-               <h1 className='text-[24px] font-semibold text-slate-100 tracking-tight'>CortexAI</h1>
+               <h1 className='text-[24px] font-semibold text-slate-100 tracking-tight'>Cortex AI</h1>
                <p className='text-[16px] font-medium text-slate-400 tracking-tight'>How can I help you today?</p>
                <p className='text-[14px] text-slate-500 max-w-[280px] leading-relaxed mx-auto'>Ask me anything — code, ideas, explanations, or just a quick question.</p>
            </div>
