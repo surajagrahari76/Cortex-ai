@@ -69,3 +69,5 @@ firebase-adminsdk*.json
 # =========================
 .cache/
 tmp/
+backend/services/agent/temp/
+backend/services/agent/temp.pptx
