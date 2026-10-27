@@ -95,7 +95,7 @@ export const pptRag=async (state)=>{
       
     const llm=await getModel("ppt-rag", state.selectedModel)
 
-    const memory = await getMemory(state.conversationId);
+    const memory = await getMemory(state.conversationId, state.userId);
     const historyMessages = memory.map(m => m.role === 'user' ? new HumanMessage(m.content) : new AIMessage(m.content));
 
     const messages=[
@@ -130,7 +130,10 @@ LENGTH ADAPTATION RULES:
     }
 
    } catch (error) {
-    console.log(error)
+    if (error.message === "Not enough credits." || error.status === 400) {
+      throw error;
+    }
+    console.error("pptRag error:", error)
          return {
             ...state,
             aiResponse:error?.data?.message || error?.message || "failed to analyze ppt"

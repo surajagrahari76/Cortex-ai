@@ -1,13 +1,12 @@
-FROM node
+FROM node:22-slim
 
 WORKDIR /app
 
-
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY ./services/agent/package*.json ./services/agent/
-RUN cd services/agent && npm install
+RUN cd services/agent && npm ci
 
 COPY services/agent ./services/agent
 COPY shared ./shared
@@ -16,4 +15,4 @@ WORKDIR /app/services/agent
 
 EXPOSE 8003
 
-CMD [ "npm","start" ]
+CMD [ "npm", "start" ]

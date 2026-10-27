@@ -62,7 +62,7 @@ firebase-adminsdk*.json
 # =========================
 # Docker
 # =========================
-.dockerignore
+# .dockerignore
 
 # =========================
 # Misc

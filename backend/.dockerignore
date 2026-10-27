@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+.env*
+**/.env*
+temp
+**/temp
+*serviceAccount*.json
+**/*serviceAccount*.json
+*service-account*.json
+**/*service-account*.json
+serviceAccountKey.json
+**/serviceAccountKey.json

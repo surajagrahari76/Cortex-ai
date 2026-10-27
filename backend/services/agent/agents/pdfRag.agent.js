@@ -91,7 +91,7 @@ export const pdfRag = async (state) => {
 
     const llm = await getModel("pdf-rag", state.selectedModel)
 
-    const memory = await getMemory(state.conversationId);
+    const memory = await getMemory(state.conversationId, state.userId);
     const historyMessages = memory.map(m => m.role === 'user' ? new HumanMessage(m.content) : new AIMessage(m.content));
 
     const messages = [
@@ -126,6 +126,9 @@ LENGTH ADAPTATION RULES:
     }
 
   } catch (error) {
+    if (error.message === "Not enough credits." || error.status === 400) {
+      throw error;
+    }
     console.error("PDF/PPT analysis failed:", error)
     return {
       ...state,

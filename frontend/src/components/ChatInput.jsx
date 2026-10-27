@@ -123,7 +123,7 @@ function ChatInput() {
     
     dispatch(setIsLoading(false))
     setSelectedFile(null)
-    if (data) {
+    if (data && !data.error) {
       dispatch(setArtifacts(data.artifacts || []))
       dispatch(updateLastMessage({ images: data.images }))
     }

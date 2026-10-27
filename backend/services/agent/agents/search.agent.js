@@ -15,7 +15,10 @@ export const searchAgent = async (state) => {
             images: results.images
         }
     } catch (error) {
-        console.log(error)
+        if (error.message === "Not enough credits." || error.status === 400) {
+            throw error
+        }
+        console.error("searchAgent error:", error)
         return {
             ...state,
             searchResults: [],

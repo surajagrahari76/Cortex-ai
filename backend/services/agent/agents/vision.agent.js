@@ -57,8 +57,11 @@ return {
 ⏳ Link expires in 10 minutes.`
 }
     } catch (error) {
-       console.log(error)
-         return {
+        if (error.message === "Not enough credits." || error.status === 400) {
+            throw error
+        }
+        console.error("visionAgent error:", error)
+        return {
             ...state,
             aiResponse:error?.data?.message || "failed to generate image"
         }

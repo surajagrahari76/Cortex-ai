@@ -54,14 +54,20 @@ return {
 }
 
     } catch (error) {
-       console.log(error)
-         return {
+        if (error.message === "Not enough credits." || error.status === 400) {
+            throw error
+        }
+        console.error("imageAnalyzer error:", error)
+        return {
             ...state,
             aiResponse:error?.data?.message || "failed to analyze image"
-        
-}
+        }
     }
     finally{
-      await fs.unlink(state.file.path)
+      if (state.file?.path && fs.existsSync(state.file.path)) {
+        try {
+          await fs.promises.unlink(state.file.path)
+        } catch (e) {}
+      }
     }
 }

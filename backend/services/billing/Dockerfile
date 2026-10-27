@@ -1,13 +1,12 @@
-FROM node
+FROM node:22-slim
 
 WORKDIR /app
 
-
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY ./services/billing/package*.json ./services/billing/
-RUN cd services/billing && npm install
+RUN cd services/billing && npm ci
 
 COPY services/billing ./services/billing
 COPY shared ./shared
@@ -16,4 +15,4 @@ WORKDIR /app/services/billing
 
 EXPOSE 8004
 
-CMD [ "npm","start" ]
+CMD [ "npm", "start" ]

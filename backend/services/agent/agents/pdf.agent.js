@@ -65,8 +65,11 @@ _Link expires in 10 minutes._`
         }
 
     } catch (error) {
-       console.log(error)
-         return {
+        if (error.message === "Not enough credits." || error.status === 400) {
+            throw error
+        }
+        console.error("pdfAgent error:", error)
+        return {
             ...state,
             aiResponse:error?.data?.message || "failed to generate pdf"
         }

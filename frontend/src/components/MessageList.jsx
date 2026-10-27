@@ -40,7 +40,7 @@ function MessageList() {
        dispatch(appendMessageChunk(chunk));
      });
      dispatch(setIsLoading(false));
-     if (data) {
+     if (data && !data.error) {
        dispatch(setArtifacts(data.artifacts || []));
        dispatch(updateLastMessage({ images: data.images, artifacts: data.artifacts }));
      }
@@ -64,7 +64,7 @@ function MessageList() {
        dispatch(appendMessageChunk(chunk));
      });
      dispatch(setIsLoading(false));
-     if (data) {
+     if (data && !data.error) {
        dispatch(setArtifacts(data.artifacts || []));
        dispatch(updateLastMessage({ images: data.images, artifacts: data.artifacts }));
      }

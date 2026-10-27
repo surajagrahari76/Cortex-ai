@@ -1,13 +1,12 @@
-FROM node
+FROM node:22-slim
 
 WORKDIR /app
 
-
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY ./services/chat/package*.json ./services/chat/
-RUN cd services/chat && npm install
+RUN cd services/chat && npm ci
 
 COPY services/chat ./services/chat
 COPY shared ./shared
@@ -16,4 +15,4 @@ WORKDIR /app/services/chat
 
 EXPOSE 8002
 
-CMD [ "npm","start" ]
+CMD [ "npm", "start" ]

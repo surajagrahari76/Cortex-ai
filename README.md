@@ -129,6 +129,17 @@ Cortex-ai/
 └── .github/workflows/      # CI/CD
 ```
 
+## Deployment
+
+The frontend is deployed on Vercel and microservices on Render (or container platforms). Below are the required environment variables per service:
+
+- **auth service**: `MONGODB_URI`, `REDIS_URL`, `FIREBASE_SERVICE_ACCOUNT`, `INTERNAL_API_KEY`
+- **chat service**: `MONGODB_URI`, `INTERNAL_API_KEY`
+- **agent service**: `MONGODB_URI`, `REDIS_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `AWS_BUCKET_NAME`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_KEY`, `GROQ_API_KEY`, `GOOGLE_API_KEY`, `OPENROUTER_API_KEY`, `TAVILY_API_KEY`, `CHAT_SERVICE`, `AUTH_SERVICE`, `INTERNAL_API_KEY`
+- **billing service**: `MONGODB_URI`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `AUTH_SERVICE`, `INTERNAL_API_KEY`
+- **gateway**: `FRONTEND_URL`, `REDIS_URL`, `AUTH_SERVICE`, `CHAT_SERVICE`, `AGENT_SERVICE`, `BILLING_SERVICE`, `INTERNAL_API_KEY`
+- **frontend**: `VITE_SERVER_URL`, `VITE_FIREBASE_API_KEY`, `VITE_RAZORPAY_KEY_ID`
+
 ## Screenshots
 
 _Add screenshots here (chat UI, RAG answer, PPT/PDF generation, billing)._

@@ -12,7 +12,7 @@ export const chatAgent = async (state) => {
 
         await checkAgentLimit(state.userId,"chat")
          const llm = await getModel("chat", state.selectedModel)
-    const history = await getMemory(state.conversationId)
+    const history = await getMemory(state.conversationId, state.userId)
 
    const searchContext=state.searchResults?`
    Web Search Results:
@@ -80,13 +80,14 @@ Answer the user using only the above search results.
         
     }
     } catch (error) {
-        console.log(error)
-         return {
+        if (error.message === "Not enough credits." || error.status === 400) {
+            throw error
+        }
+        console.error("chatAgent error:", error)
+        return {
             ...state,
             aiResponse:error?.data?.message || "failed to generate chat"
         }
-        
-    
     }
    
 }

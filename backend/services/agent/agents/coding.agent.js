@@ -162,12 +162,15 @@ ${state.prompt}
     artifacts:[]
    }  
 } catch (error) {
-   console.log("codingAgent caught error:", error)
-         return {
-            ...state,
-            aiResponse:error?.message || error?.data?.message || "failed to generate code",
-            artifacts:[]
-        }
+    if (error.message === "Not enough credits." || error.status === 400) {
+        throw error
+    }
+    console.error("codingAgent caught error:", error)
+    return {
+        ...state,
+        aiResponse:error?.message || error?.data?.message || "failed to generate code",
+        artifacts:[]
+    }
 }
   
 }
