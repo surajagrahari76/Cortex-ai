@@ -11,6 +11,9 @@ const port = process.env.PORT
 const app = express()
 
 app.use(express.json())
+
+app.get("/health", (req, res) => res.status(200).json({ status: "ok" }))
+
 app.use("/", internalAuth, router)
 
 app.use((err, req, res, next) => {
