@@ -10,7 +10,8 @@ export const proxyWithHeader = (serviceUrl) => {
                     proxyReqOpts.headers["x-user-credits"] = String(srcReq.user.credits)
                 }
             }
-            proxyReqOpts.headers["x-internal-key"] = process.env.INTERNAL_API_KEY || ""
+            const INTERNAL_KEY = (process.env.INTERNAL_API_KEY || "").replace(/[^\x21-\x7E]/g, "").trim();
+            proxyReqOpts.headers["x-internal-key"] = INTERNAL_KEY
             return proxyReqOpts
         }
     });
@@ -24,7 +25,8 @@ export const proxyWithHeader = (serviceUrl) => {
                     proxyReqOpts.headers["x-user-credits"] = String(srcReq.user.credits)
                 }
             }
-            proxyReqOpts.headers["x-internal-key"] = process.env.INTERNAL_API_KEY || ""
+            const INTERNAL_KEY = (process.env.INTERNAL_API_KEY || "").replace(/[^\x21-\x7E]/g, "").trim();
+            proxyReqOpts.headers["x-internal-key"] = INTERNAL_KEY
             return proxyReqOpts
         }
     });

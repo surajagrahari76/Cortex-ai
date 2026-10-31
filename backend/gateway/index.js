@@ -49,5 +49,7 @@ app.get("/",(req,res)=>{
 })
 
 app.listen(port,()=>{
+    const INTERNAL_KEY = (process.env.INTERNAL_API_KEY || "").replace(/[^\x21-\x7E]/g, "").trim();
+    console.log("INTERNAL_API_KEY length:", INTERNAL_KEY.length)
     console.log(`gateway started at ${port}`)
 })
