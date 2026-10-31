@@ -2,12 +2,13 @@ import axios from "axios"
 
 export const deductCredits = async (userId, agent) => {
     try {
+        const INTERNAL_KEY = (process.env.INTERNAL_API_KEY || "").replace(/[^\x21-\x7E]/g, "").trim();
         const { data } = await axios.post(
             `${process.env.AUTH_SERVICE}/deduct-credits`,
             { userId, agent },
             {
                 headers: {
-                    "x-internal-key": process.env.INTERNAL_API_KEY || ""
+                    "x-internal-key": INTERNAL_KEY
                 }
             }
         )

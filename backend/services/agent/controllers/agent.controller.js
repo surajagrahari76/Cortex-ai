@@ -13,9 +13,10 @@ export const agent = async (req, res, next) => {
             return res.status(401).json({ message: "Unauthorized" })
         }
 
+        const INTERNAL_KEY = (process.env.INTERNAL_API_KEY || "").replace(/[^\x21-\x7E]/g, "").trim();
         const chatHeaders = {
             "x-user-id": userId,
-            "x-internal-key": process.env.INTERNAL_API_KEY || ""
+            "x-internal-key": INTERNAL_KEY
         }
 
         // Verify conversation belongs to x-user-id before reading, updating, deleting or saving messages

@@ -82,12 +82,13 @@ export const verifyPayment = async (req, res) => {
         payment.paymentId = razorpay_payment_id
         await payment.save()
 
+        const INTERNAL_KEY = (process.env.INTERNAL_API_KEY || "").replace(/[^\x21-\x7E]/g, "").trim();
         await axios.post(
             `${process.env.AUTH_SERVICE}/update-plan`,
             { userId: payment.userId, plan: payment.plan, credits: payment.credits },
             {
                 headers: {
-                    "x-internal-key": process.env.INTERNAL_API_KEY || ""
+                    "x-internal-key": INTERNAL_KEY
                 }
             }
         )
