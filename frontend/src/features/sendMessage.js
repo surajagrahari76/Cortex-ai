@@ -1,6 +1,6 @@
 async function sendMessage(payload, onChunk) {
   try {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/agent/chat`, {
+    const response = await fetch("/api/agent/chat", {
       method: "POST",
       body: payload,
       credentials: "include" // for axios withCredentials parity
@@ -13,7 +13,7 @@ async function sendMessage(payload, onChunk) {
         if (errData && errData.message) {
           errMessage = errData.message;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       if (onChunk) {
         onChunk(errMessage);
