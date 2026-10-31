@@ -7,13 +7,106 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { motion } from 'motion/react'
 
-function MessageBubble({ role, content, images, onRegenerate, onEditSubmit }) {
+const formatBubbleContent = (rawContent) => {
+  if (rawContent === undefined || rawContent === null) {
+    return "";
+  }
+
+  let text = String(rawContent).trim();
+
+  if (!text || text === "undefined") {
+    return "";
+  }
+
+  text = text.replace(/undefined\s*$/g, "").trim();
+  if (!text || text === "undefined") {
+    return "";
+  }
+
+  const hasCodeGenMarker = /(?:coding\s*)?CODE_GENERATION/i.test(text);
+  const hasFilesJson = /"files"\s*:\s*\[/.test(text) || /```(?:json)?\s*\{[\s\S]*?"files"/i.test(text);
+
+  if (hasCodeGenMarker || hasFilesJson) {
+    let explanation = null;
+
+    const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (codeBlockMatch) {
+      try {
+        const parsed = JSON.parse(codeBlockMatch[1]);
+        if (parsed && typeof parsed === "object") {
+          const exp = parsed.explanation || parsed.description || parsed.message;
+          if (exp && typeof exp === "string" && exp.trim()) {
+            explanation = exp.trim();
+          }
+        }
+      } catch {
+        // ignore JSON parse error
+      }
+    }
+
+    if (!explanation) {
+      const rawJsonMatch = text.match(/(\{[\s\S]*"files"[\s\S]*\})/);
+      if (rawJsonMatch) {
+        try {
+          const parsed = JSON.parse(rawJsonMatch[1]);
+          if (parsed && typeof parsed === "object") {
+            const exp = parsed.explanation || parsed.description || parsed.message;
+            if (exp && typeof exp === "string" && exp.trim()) {
+              explanation = exp.trim();
+            }
+          }
+        } catch {
+          // ignore JSON parse error
+        }
+      }
+    }
+
+    if (!explanation) {
+      const expMatch = text.match(/"explanation"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      if (expMatch) {
+        try {
+          explanation = JSON.parse(`"${expMatch[1]}"`);
+        } catch {
+          explanation = expMatch[1];
+        }
+      }
+    }
+
+    if (explanation && typeof explanation === "string" && explanation.trim()) {
+      return explanation.trim();
+    }
+
+    let cleaned = text
+      .replace(/(?:coding\s*)?CODE_GENERATION/gi, "")
+      .replace(/```(?:json)?\s*[\s\S]*?```/gi, "")
+      .replace(/```(?:json)?[\s\S]*$/gi, "")
+      .replace(/\{[\s\S]*?"files"[\s\S]*?\}/gi, "")
+      .replace(/\{[\s\S]*?"files"[\s\S]*$/gi, "")
+      .replace(/undefined\s*$/g, "")
+      .trim();
+
+    if (cleaned && cleaned !== "undefined" && cleaned !== "Code Generated Successfully.") {
+      return cleaned;
+    }
+
+    return "Code generated successfully! You can view and edit the project files in the panel on the right.";
+  }
+
+  text = text.replace(/undefined\s*$/g, "").trim();
+  return text === "undefined" ? "" : text;
+};
+
+function MessageBubble({ role, content, images = [], onRegenerate, onEditSubmit }) {
   const isUser = role === "user"
   const [lightBox, setLightBox] = useState(null)
   const [copiedCode, setCopiedCode] = useState("")
   const [isEditing, setIsEditing] = useState(false)
-  const [editContent, setEditContent] = useState(content)
+  const [editContent, setEditContent] = useState(content || "")
   const [isHovered, setIsHovered] = useState(false)
+
+  const displayContent = isUser
+    ? (content && content !== "undefined" ? String(content).replace(/undefined\s*$/g, "").trim() : "")
+    : formatBubbleContent(content);
 
   const copyCode = async (code) => {
     await navigator.clipboard.writeText(code)
@@ -69,7 +162,7 @@ function MessageBubble({ role, content, images, onRegenerate, onEditSubmit }) {
             <div className="flex justify-end gap-2">
               <button 
                 onClick={() => {
-                  setEditContent(content);
+                  setEditContent(content || "");
                   setIsEditing(false);
                 }}
                 className="px-4 py-1.5 rounded-lg text-[13px] font-medium text-slate-200 hover:bg-white/10 transition-colors"
@@ -87,7 +180,7 @@ function MessageBubble({ role, content, images, onRegenerate, onEditSubmit }) {
           </div>
         ) : (
           <>
-            {images.length > 0 && (
+            {(images || []).length > 0 && (
               <div className='flex flex-wrap gap-3 mt-4'>
                 {images.map((img, i) => (
                   <img
@@ -209,18 +302,18 @@ function MessageBubble({ role, content, images, onRegenerate, onEditSubmit }) {
               }
               }}
             >
-              {content}
+              {displayContent}
             </Markdown>
           </>
         )}
 
-        {!isUser && (
+        {!isUser && displayContent && (
           <div className="mt-3 flex justify-start gap-4 border-t border-white/5 pt-2">
             <button 
-              onClick={() => copyCode(content)}
+              onClick={() => copyCode(displayContent)}
               className="flex items-center gap-1.5 text-[12px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
-              {copiedCode === content ? (
+              {copiedCode === displayContent ? (
                 <>
                   <Check size={14} className="text-emerald-400"/>
                   <span className="text-emerald-400">Copied!</span>

@@ -30,7 +30,9 @@ const messageSlice=createSlice({
        appendMessageChunk:(state,action)=>{
         const lastMessage = state.messages[state.messages.length - 1];
         if (lastMessage && lastMessage.role === "assistant") {
-            lastMessage.content += action.payload;
+            if (action.payload && action.payload !== "undefined") {
+                lastMessage.content = (lastMessage.content || "") + action.payload;
+            }
         }
        },
        updateLastMessage:(state,action)=>{

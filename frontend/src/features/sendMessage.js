@@ -15,7 +15,7 @@ async function sendMessage(payload, onChunk) {
         }
       } catch (e) { }
 
-      if (onChunk) {
+      if (onChunk && errMessage && errMessage !== 'undefined') {
         onChunk(errMessage);
       }
       return { error: errMessage };
@@ -46,11 +46,16 @@ async function sendMessage(payload, onChunk) {
               try {
                 const data = JSON.parse(dataStr);
                 if (data.type === 'chunk') {
-                  onChunk(data.content);
+                  if (data.content !== undefined && data.content !== null && data.content !== 'undefined') {
+                    onChunk(data.content);
+                  }
                 } else if (data.type === 'final') {
                   finalData = data.data;
                 } else if (data.type === 'error') {
-                  onChunk(`\n\n⚠️ ${data.message || 'An error occurred.'}`);
+                  const errorMsg = data.message || 'An error occurred.';
+                  if (errorMsg !== 'undefined') {
+                    onChunk(`\n\n⚠️ ${errorMsg}`);
+                  }
                 }
               } catch (e) {
                 console.error("Parse error", e);
@@ -67,10 +72,11 @@ async function sendMessage(payload, onChunk) {
     }
   } catch (error) {
     console.error("sendMessage error:", error);
-    if (onChunk) {
-      onChunk(error.message || "Failed to send message. Please check connection.");
+    const errText = error?.message || "Failed to send message. Please check connection.";
+    if (onChunk && errText !== 'undefined') {
+      onChunk(errText);
     }
-    return { error: error.message };
+    return { error: errText };
   }
 }
 
