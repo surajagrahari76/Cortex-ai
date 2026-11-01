@@ -8,11 +8,14 @@ import { auth, googleProvider } from '../../utils/firebase'
 import api from '../../utils/axios'
 import { setUserdata } from '../redux/userSlice'
 import { FcGoogle } from "react-icons/fc"
+import { useWake } from '../context/useWake'
 
 function Landing() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { userData } = useSelector(state => state.user)
+  const { isBannerVisible, isReady } = useWake()
+  const isStarting = isBannerVisible && !isReady
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
@@ -119,12 +122,13 @@ function Landing() {
                 />
                 {authError && <p className='text-red-400 text-sm'>{authError}</p>}
                 <motion.button 
-                  whileHover={{scale: 1.02}}
-                  whileTap={{scale: 0.98}}
+                  whileHover={isStarting ? {} : {scale: 1.02}}
+                  whileTap={isStarting ? {} : {scale: 0.98}}
+                  disabled={isStarting}
                   type='submit'
-                  className='w-full flex justify-center items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-medium text-lg shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all cursor-pointer'
+                  className={`w-full flex justify-center items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-medium text-lg shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all ${isStarting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  Login with Email
+                  {isStarting ? "Starting servers..." : "Login with Email"}
                 </motion.button>
               </form>
               <div className='flex items-center w-full gap-3'>
@@ -133,13 +137,20 @@ function Landing() {
                 <div className='h-px bg-white/10 flex-1'></div>
               </div>
               <motion.button 
-                whileHover={{scale: 1.05}}
-                whileTap={{scale: 0.95}}
+                whileHover={isStarting ? {} : {scale: 1.05}}
+                whileTap={isStarting ? {} : {scale: 0.95}}
                 onClick={googleLogin}
+                disabled={isStarting}
                 type="button"
-                className='w-full flex justify-center items-center gap-3 px-8 py-3 rounded-xl bg-white text-slate-900 font-medium text-lg shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all cursor-pointer'
+                className={`w-full flex justify-center items-center gap-3 px-8 py-3 rounded-xl bg-white text-slate-900 font-medium text-lg shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all ${isStarting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
-                <FcGoogle size={24} /> Continue with Google
+                {isStarting ? (
+                  "Starting servers..."
+                ) : (
+                  <>
+                    <FcGoogle size={24} /> Continue with Google
+                  </>
+                )}
               </motion.button>
             </div>
           )}

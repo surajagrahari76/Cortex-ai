@@ -5,6 +5,7 @@ import Landing from './pages/Landing'
 import getCurrentUser from './features/getCurrentUser'
 import { useDispatch } from 'react-redux'
 import { setUserdata } from './redux/userSlice'
+import { WakeProvider } from './context/WakeProvider'
 
 function App() {
 
@@ -18,12 +19,14 @@ function App() {
   },[])
 
   return (
-   <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/chat" element={<Home />} />
-    </Routes>
-   </BrowserRouter>
+   <WakeProvider>
+     <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/chat" element={<Home />} />
+      </Routes>
+     </BrowserRouter>
+   </WakeProvider>
   )
 }
 

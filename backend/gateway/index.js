@@ -29,6 +29,86 @@ app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok" })
 })
 
+let lastWakeResult = null;
+let lastWakeTime = 0;
+let inFlightWakePromise = null;
+const WAKE_COOLDOWN_MS = 20000;
+
+app.get("/api/wake", async (req, res) => {
+    try {
+        const now = Date.now();
+        if (lastWakeResult && (now - lastWakeTime < WAKE_COOLDOWN_MS)) {
+            return res.status(200).json(lastWakeResult);
+        }
+
+        if (inFlightWakePromise) {
+            const cachedResult = await inFlightWakePromise;
+            return res.status(200).json(cachedResult);
+        }
+
+        inFlightWakePromise = (async () => {
+            const targets = [
+                { name: "auth", url: process.env.AUTH_SERVICE },
+                { name: "chat", url: process.env.CHAT_SERVICE },
+                { name: "agent", url: process.env.AGENT_SERVICE },
+                { name: "billing", url: process.env.BILLING_SERVICE }
+            ];
+
+            const results = await Promise.allSettled(
+                targets.map(async (t) => {
+                    if (!t.url) {
+                        return { name: t.name, status: "down" };
+                    }
+                    try {
+                        await fetch(t.url, {
+                            method: "GET",
+                            signal: AbortSignal.timeout(65000)
+                        });
+                        return { name: t.name, status: "up" };
+                    } catch {
+                        return { name: t.name, status: "down" };
+                    }
+                })
+            );
+
+            const services = {
+                auth: "down",
+                chat: "down",
+                agent: "down",
+                billing: "down"
+            };
+
+            for (const r of results) {
+                if (r.status === "fulfilled" && r.value) {
+                    services[r.value.name] = r.value.status;
+                }
+            }
+
+            const ready =
+                services.auth === "up" &&
+                services.chat === "up" &&
+                services.agent === "up" &&
+                services.billing === "up";
+
+            const data = {
+                ready,
+                services
+            };
+
+            lastWakeResult = data;
+            lastWakeTime = Date.now();
+            return data;
+        })();
+
+        const responseData = await inFlightWakePromise;
+        inFlightWakePromise = null;
+        return res.status(200).json(responseData);
+    } catch {
+        inFlightWakePromise = null;
+        return res.status(500).json({ ready: false, error: "Wake ping failed" });
+    }
+});
+
 app.use("/api/auth", (req, res, next) => {
     const cleanPath = req.path.replace(/\/+$/, "")
     if (cleanPath === "/update-plan" || cleanPath === "/deduct-credits") {
