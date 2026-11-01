@@ -23,12 +23,28 @@ const formatBubbleContent = (rawContent) => {
     return "";
   }
 
-  const hasCodeGenMarker = /(?:coding\s*)?CODE_GENERATION/i.test(text);
-  const hasFilesJson = /"files"\s*:\s*\[/.test(text) || /```(?:json)?\s*\{[\s\S]*?"files"/i.test(text);
+  // 1. If accumulated content contains "CODE_GENERATION" anywhere, starts with "coding",
+  // or contains code-generation files JSON, treat as code generation.
+  const isCodeGen = 
+    text.includes("CODE_GENERATION") || 
+    text.toLowerCase().startsWith("coding") ||
+    /"files"\s*:\s*\[/.test(text);
 
-  if (hasCodeGenMarker || hasFilesJson) {
-    let explanation = null;
+  if (isCodeGen) {
+    // A) Check for plain-text explanation before the marker
+    const markerMatch = text.match(/(?:coding\s*)?CODE_GENERATION/i);
+    if (markerMatch && markerMatch.index > 0) {
+      const before = text.slice(0, markerMatch.index)
+        .replace(/^\s*coding\s*/i, "")
+        .replace(/undefined\s*$/g, "")
+        .trim();
+      if (before && !/^[\[\{\(\)\]\}\s]+$/.test(before)) {
+        return before;
+      }
+    }
 
+    // B) Check for an explanation field inside the JSON if present
+    let jsonExplanation = null;
     const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (codeBlockMatch) {
       try {
@@ -36,7 +52,7 @@ const formatBubbleContent = (rawContent) => {
         if (parsed && typeof parsed === "object") {
           const exp = parsed.explanation || parsed.description || parsed.message;
           if (exp && typeof exp === "string" && exp.trim()) {
-            explanation = exp.trim();
+            jsonExplanation = exp.trim();
           }
         }
       } catch {
@@ -44,7 +60,7 @@ const formatBubbleContent = (rawContent) => {
       }
     }
 
-    if (!explanation) {
+    if (!jsonExplanation) {
       const rawJsonMatch = text.match(/(\{[\s\S]*"files"[\s\S]*\})/);
       if (rawJsonMatch) {
         try {
@@ -52,7 +68,7 @@ const formatBubbleContent = (rawContent) => {
           if (parsed && typeof parsed === "object") {
             const exp = parsed.explanation || parsed.description || parsed.message;
             if (exp && typeof exp === "string" && exp.trim()) {
-              explanation = exp.trim();
+              jsonExplanation = exp.trim();
             }
           }
         } catch {
@@ -61,35 +77,47 @@ const formatBubbleContent = (rawContent) => {
       }
     }
 
-    if (!explanation) {
+    if (!jsonExplanation) {
       const expMatch = text.match(/"explanation"\s*:\s*"((?:[^"\\]|\\.)*)"/);
       if (expMatch) {
         try {
-          explanation = JSON.parse(`"${expMatch[1]}"`);
+          jsonExplanation = JSON.parse(`"${expMatch[1]}"`);
         } catch {
-          explanation = expMatch[1];
+          jsonExplanation = expMatch[1];
         }
       }
     }
 
-    if (explanation && typeof explanation === "string" && explanation.trim()) {
-      return explanation.trim();
+    if (jsonExplanation && typeof jsonExplanation === "string" && jsonExplanation.trim()) {
+      return jsonExplanation.trim();
     }
 
-    let cleaned = text
-      .replace(/(?:coding\s*)?CODE_GENERATION/gi, "")
-      .replace(/```(?:json)?\s*[\s\S]*?```/gi, "")
-      .replace(/```(?:json)?[\s\S]*$/gi, "")
-      .replace(/\{[\s\S]*?"files"[\s\S]*?\}/gi, "")
-      .replace(/\{[\s\S]*?"files"[\s\S]*$/gi, "")
+    // C) Check for plain-text explanation after the JSON block
+    let afterText = "";
+    const lastFence = text.lastIndexOf("```");
+    if (lastFence !== -1 && lastFence + 3 < text.length) {
+      afterText = text.slice(lastFence + 3);
+    } else {
+      const filesIdx = text.indexOf('"files"');
+      if (filesIdx !== -1) {
+        const lastBrace = text.lastIndexOf("}");
+        if (lastBrace !== -1 && lastBrace + 1 < text.length) {
+          afterText = text.slice(lastBrace + 1);
+        }
+      }
+    }
+
+    afterText = afterText
       .replace(/undefined\s*$/g, "")
+      .replace(/\bundefined\b/g, "")
       .trim();
 
-    if (cleaned && cleaned !== "undefined" && cleaned !== "Code Generated Successfully.") {
-      return cleaned;
+    if (afterText && !/^[\]\}\s,"';]+$/.test(afterText) && !afterText.includes('"files"')) {
+      return afterText;
     }
 
-    return "Code generated successfully! You can view and edit the project files in the panel on the right.";
+    // Do NOT render raw content or JSON fragments. Render the short friendly line.
+    return "Code generated. Check the code panel.";
   }
 
   text = text.replace(/undefined\s*$/g, "").trim();
